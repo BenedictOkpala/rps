@@ -29,10 +29,11 @@ export function planRound(you: Hand, original: Hand, score: number, allowPoint: 
   return { you, original, final, cheated, outcome: winner(you, final) };
 }
 export const LINES = {
-  cheat: ["Take it to court.", "Prove it.", "What?", "I picked that.", "Check again.", "Looks right to me.", "Scoreboard says I won.", "Much better.", "Didn't see anything."],
-  ai: ["Didn't even have to cheat.", "Didn't touch a thing.", "That one was actually fair.", "Completely legal.", "See? Natural talent.", "No amendments necessary.", "Easy."],
-  you: ["Fine.", "Enjoy it.", "Don't get comfortable.", "Take your point."],
-  draw: ["Again.", "Nothing happened.", "Next."],
+  early: ["I've got time.", "Go ahead.", "Try me.", "I'm still working. I can do both.", "Let's see what you've got.", "Your move."],
+  cheat: ["I picked that.", "What?", "I didn't change anything.", "Check again.", "Looks right to me.", "I won.", "Prove it.", "Take me to court."],
+  ai: ["Didn't even have to cheat.", "I didn't touch a thing.", "That one was actually fair.", "See? I can win normally.", "Completely legal."],
+  you: ["Fine.", "Enjoy it.", "Take your point.", "Don't get comfortable.", "I'll allow it."],
+  draw: ["Again.", "Nothing happened.", "Next.", "Run it back."],
   carry: ["Good decision.", "Thought so.", "Wise.", "Let's keep moving."],
   end: ["Let's go again. I promise not to cheat.", "Okay. This time I'll actually play fair.", "Fresh match. Clean slate.", "No cheating this time. Promise.", "You almost had me. Again?"]
 };
@@ -56,7 +57,7 @@ export function reducer(state: Game, action: Action): Game {
   if (action.type === "COURT" && canAppeal(state)) return { ...state, phase: "COURT", verdict: false };
   if (action.type === "NEXT" && (state.phase === "RESOLVED" || canAppeal(state) || (state.phase === "COURT" && state.verdict))) {
     if (state.ai >= 5) return { ...state, phase: "MATCH_OVER", appealHandled: true, line: state.endLine };
-    const continued = state.phase === "RESOLVED" && state.round?.cheated ? speak(state, "carry") : { ...state, line: "Your move." };
+    const continued = state.phase === "RESOLVED" && state.round?.cheated ? speak(state, "carry") : speak(state, "early");
     return { ...continued, phase: "WAITING_FOR_PLAYER", roundNumber: state.roundNumber + 1, round: null, scored: false, verdict: false, appealHandled: false };
   }
   if (action.type !== "TICK") return state;
@@ -81,6 +82,7 @@ export function visibleHands(game: Game): { you: Hand; ai: Hand; hidden: boolean
     hidden: false,
   };
 }
+
 
 
 
