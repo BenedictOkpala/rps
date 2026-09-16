@@ -44,7 +44,7 @@ function speak(state: Game, pool: keyof typeof LINES): Game {
   return { ...state, line, history: { ...state.history, [pool]: line } };
 }
 export function canAppeal(state: Game): boolean {
-  return (state.phase === "RESOLVED" || state.phase === "MATCH_OVER") && !!state.round?.cheated && !state.appealHandled;
+  return state.phase === "RESOLVED" && state.you < 5 && state.ai < 5 && !!state.round?.cheated && !state.appealHandled;
 }
 export type Action = { type: "CHOOSE"; hand: Hand; original: Hand; allow: boolean } | { type: "TICK"; line?: string } | { type: "COURT" } | { type: "NEXT"; line?: string } | { type: "RESET" };
 export function reducer(state: Game, action: Action): Game {
@@ -82,6 +82,7 @@ export function visibleHands(game: Game): { you: Hand; ai: Hand; hidden: boolean
     hidden: false,
   };
 }
+
 
 
 

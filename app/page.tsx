@@ -98,7 +98,7 @@ export default function Home() {
         </div>
         <div className="controls" ref={controls}>
           {phase === "MATCH_OVER"
-            ? <div className="match-actions">{appealActions}<button className="primary" onClick={() => dispatch({ type: "RESET" })}>→ RUN IT BACK</button></div>
+            ? <div className="match-actions"><button className="primary" onClick={() => dispatch({ type: "RESET" })}>→ RUN IT BACK</button></div>
             : phase === "RESOLVED"
               ? round?.cheated
                 ? appealActions
@@ -130,6 +130,7 @@ export default function Home() {
     </main>
   );
 }
+
 
 
 

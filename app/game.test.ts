@@ -185,14 +185,8 @@ test("both fifth-point paths preserve scores/hands, promise fairness, and reset 
     let state = resolve(reducer({...initialGame,you:3,ai:4},{type:"CHOOSE",hand:"rock",original,allow:false}));
     assert.equal(state.phase,"MATCH_OVER"); assert.equal(state.ai,5); assert.equal(state.you,3);
     assert.equal(state.line,"Let's go again. I promise not to cheat.");
-    const hands = visibleHands(state);
-    assert.equal(canAppeal(state),original === "scissors");
-    if(canAppeal(state)) {
-      state = reducer(state,{type:"COURT"}); state = reducer(state,{type:"TICK"});
-      assert.equal(state.ai,5); state = reducer(state,{type:"NEXT"});
-      assert.equal(state.phase,"MATCH_OVER"); assert.deepEqual(visibleHands(state),hands);
-      assert.equal(state.line,LINES.end[0]); assert.equal(canAppeal(state),false);
-    }
+    assert.equal(canAppeal(state),false);
+    assert.equal(reducer(state,{type:"COURT"}),state);
     state = reducer(state,{type:"RESET"});
     assert.deepEqual({...state,history:{}},initialGame);
     assert.deepEqual(visibleHands(state),{you:"rock",ai:"rock",hidden:true});
@@ -205,10 +199,22 @@ test("both fifth-point paths preserve scores/hands, promise fairness, and reset 
   }
 });
 
-test("chesting a final cheated round stays at match-over without opening court", () => {
+test("stale continuation actions cannot leave match-over or open court", () => {
   let state = resolve(reducer({...initialGame,ai:4},{type:"CHOOSE",hand:"scissors",original:"paper",allow:false}));
   const hands=visibleHands(state);
   state=reducer(state,{type:"NEXT"});
   assert.equal(state.phase,"MATCH_OVER");assert.equal(state.ai,5);assert.equal(state.verdict,false);
   assert.deepEqual(visibleHands(state),hands);assert.equal(canAppeal(state),false);
+});
+
+test("cheated-round controls are unavailable at match-over and court entry is blocked", () => {
+  const active = resolve(reducer(initialGame,{type:"CHOOSE",hand:"scissors",original:"paper",allow:false}));
+  assert.equal(canAppeal(active),true);
+  assert.equal(reducer(active,{type:"COURT"}).phase,"COURT");
+  for(const scores of [{you:0,ai:5},{you:5,ai:0}]) {
+    const ended: Game = {...active,...scores,phase:"MATCH_OVER"};
+    assert.equal(canAppeal(ended),false);
+    assert.equal(reducer(ended,{type:"COURT"}),ended);
+    assert.equal(reducer(ended,{type:"NEXT"}),ended);
+  }
 });
